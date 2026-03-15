@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useUser, SignInButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { 
   Video, 
   Calendar, 
@@ -21,6 +25,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function Home() {
+  const { isSignedIn } = useUser();
+  const router = useRouter();
+
   return (
     <div className="flex min-h-screen flex-col bg-black text-white selection:bg-violet-500/30">
       <Navbar />
@@ -53,10 +60,19 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-              <Button size="lg" className="h-14 px-8 text-lg bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20 font-semibold transition-all hover:scale-105 active:scale-95">
-                Start Generating Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              {isSignedIn ? (
+                <Button onClick={() => router.push("/dashboard")} size="lg" className="h-14 px-8 text-lg bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20 font-semibold transition-all hover:scale-105 active:scale-95">
+                  Start Generating Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              ) : (
+                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard" signUpFallbackRedirectUrl="/dashboard">
+                  <Button size="lg" className="h-14 px-8 text-lg bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20 font-semibold transition-all hover:scale-105 active:scale-95">
+                    Start Generating Free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </SignInButton>
+              )}
               <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-white/10 bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-all hover:scale-105 active:scale-95">
                 View Demo
               </Button>
@@ -223,9 +239,17 @@ export default function Home() {
               No credit card required to start.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-               <Button size="lg" className="h-14 px-10 text-lg bg-violet-600 hover:bg-violet-700">
-                 Get Started Now
-               </Button>
+                 {isSignedIn ? (
+                   <Button onClick={() => router.push("/dashboard")} size="lg" className="h-14 px-10 text-lg bg-violet-600 hover:bg-violet-700">
+                     Get Started Now
+                   </Button>
+                 ) : (
+                   <SignInButton mode="modal" fallbackRedirectUrl="/dashboard" signUpFallbackRedirectUrl="/dashboard">
+                     <Button size="lg" className="h-14 px-10 text-lg bg-violet-600 hover:bg-violet-700">
+                       Get Started Now
+                     </Button>
+                   </SignInButton>
+                 )}
                <Button variant="outline" size="lg" className="h-14 px-10 text-lg border-white/10">
                  Contact Sales
                </Button>

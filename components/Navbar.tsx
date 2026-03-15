@@ -4,11 +4,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { Video, Menu } from "lucide-react";
+import { useUser, UserButton, SignInButton } from "@clerk/nextjs";
+
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { isSignedIn } = useUser();
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-md">
@@ -30,26 +33,34 @@ export default function Navbar() {
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink href="#how-it-works" className={navigationMenuTriggerStyle() + " bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white"}>
-                  How it Works
+                <NavigationMenuLink href="#pricing" className={navigationMenuTriggerStyle() + " bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white"}>
+                  Pricing
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink href="#pricing" className={navigationMenuTriggerStyle() + " bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white"}>
-                  Pricing
+                <NavigationMenuLink href="#about" className={navigationMenuTriggerStyle() + " bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white"}>
+                  About
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
         </nav>
 
-        <div className="hidden items-center gap-4 md:flex">
-          <Button variant="ghost" className="text-zinc-400 hover:bg-white/5 hover:text-white">
-            Log in
-          </Button>
-          <Button className="bg-violet-600 text-white hover:bg-violet-700">
-            Get Started
-          </Button>
+        <div className="hidden items-center gap-2 md:flex">
+          {isSignedIn ? (
+            <Link href="/dashboard">
+              <Button variant="ghost" className="text-zinc-400 hover:bg-white/5 hover:text-white">
+                Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <SignInButton mode="modal" fallbackRedirectUrl="/dashboard" signUpFallbackRedirectUrl="/dashboard">
+              <Button variant="ghost" className="text-zinc-400 hover:bg-white/5 hover:text-white">
+                Dashboard
+              </Button>
+            </SignInButton>
+          )}
+          <UserButton />
         </div>
 
         {/* Mobile Navigation */}
@@ -71,20 +82,30 @@ export default function Navbar() {
                   <Link href="#features" className="text-lg font-medium text-zinc-400 hover:text-white" onClick={() => setIsOpen(false)}>
                     Features
                   </Link>
-                  <Link href="#how-it-works" className="text-lg font-medium text-zinc-400 hover:text-white" onClick={() => setIsOpen(false)}>
-                    How it Works
-                  </Link>
                   <Link href="#pricing" className="text-lg font-medium text-zinc-400 hover:text-white" onClick={() => setIsOpen(false)}>
                     Pricing
                   </Link>
+                  <Link href="#about" className="text-lg font-medium text-zinc-400 hover:text-white" onClick={() => setIsOpen(false)}>
+                    About
+                  </Link>
                 </nav>
                 <div className="mt-4 flex flex-col gap-4">
-                  <Button variant="outline" className="border-white/10 text-white hover:bg-white/5" onClick={() => setIsOpen(false)}>
-                    Log in
-                  </Button>
-                  <Button className="bg-violet-600 text-white hover:bg-violet-700" onClick={() => setIsOpen(false)}>
-                    Get Started
-                  </Button>
+                  <div className="flex items-center justify-between text-white">
+                    {isSignedIn ? (
+                      <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="text-zinc-400 hover:bg-white/5 hover:text-white w-full justify-start px-0">
+                          Dashboard
+                        </Button>
+                      </Link>
+                    ) : (
+                      <SignInButton mode="modal" fallbackRedirectUrl="/dashboard" signUpFallbackRedirectUrl="/dashboard">
+                        <Button variant="ghost" className="text-zinc-400 hover:bg-white/5 hover:text-white w-full justify-start px-0" onClick={() => setIsOpen(false)}>
+                          Dashboard
+                        </Button>
+                      </SignInButton>
+                    )}
+                    <UserButton />
+                  </div>
                 </div>
               </div>
             </SheetContent>
