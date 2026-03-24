@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { 
   Languages, 
   Mic2, 
@@ -15,24 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-const languages = [
-  { id: "en", name: "English", flag: "🇺🇸" },
-  { id: "es", name: "Spanish", flag: "🇪🇸" },
-  { id: "fr", name: "French", flag: "🇫🇷" },
-  { id: "de", name: "German", flag: "🇩🇪" },
-  { id: "it", name: "Italian", flag: "🇮🇹" },
-  { id: "pt", name: "Portuguese", flag: "🇵🇹" },
-];
-
-const voices = [
-  { id: "v1", name: "Adam", type: "Male", style: "Narrative", preview: "" },
-  { id: "v2", name: "Bella", type: "Female", style: "Calm", preview: "" },
-  { id: "v3", name: "Charlie", type: "Male", style: "Energetic", preview: "" },
-  { id: "v4", name: "Diana", type: "Female", style: "Professional", preview: "" },
-  { id: "v5", name: "Ethan", type: "Male", style: "Deep", preview: "" },
-  { id: "v6", name: "Fiona", type: "Female", style: "Friendly", preview: "" },
-];
+import { Language, DeepgramVoices, FonadalabVoices } from "@/lib/voices";
 
 interface CreateStepTwoProps {
   formData: {
@@ -52,11 +35,42 @@ export function CreateStepTwo({
 }: CreateStepTwoProps) {
   const { selectedLanguage, selectedVoice } = formData;
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const togglePlay = (e: React.MouseEvent, voiceId: string) => {
+  const togglePlay = (e: React.MouseEvent, voiceId: string, previewUrl: string) => {
     e.stopPropagation();
-    setPlayingVoice(playingVoice === voiceId ? null : voiceId);
+
+    if (playingVoice === voiceId) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      setPlayingVoice(null);
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      const audio = new Audio(`/voices/${previewUrl}`);
+      audioRef.current = audio;
+      audio.play().catch(err => console.error("Error playing audio", err));
+      setPlayingVoice(voiceId);
+      
+      audio.onended = () => {
+        setPlayingVoice(null);
+      };
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+
+  const currentLanguageObj = Language.find(l => l.modelLangCode === selectedLanguage) || Language[0];
+  const modelNameForVoice = currentLanguageObj?.modelName;
+  const availableVoices = modelNameForVoice === 'fonadalab' ? FonadalabVoices : DeepgramVoices;
 
   return (
     <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-8 md:p-12 shadow-sm space-y-12">
@@ -74,22 +88,22 @@ export function CreateStepTwo({
             <Globe2 className="h-5 w-5 text-violet-600" />
             <h3 className="font-bold text-zinc-900">Select Language</h3>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {languages.map((lang) => (
+          <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {Language.map((lang) => (
               <Button
-                key={lang.id}
+                key={lang.modelLangCode}
                 variant="ghost"
-                onClick={() => updateFormData({ selectedLanguage: lang.id })}
+                onClick={() => updateFormData({ selectedLanguage: lang.modelLangCode, selectedVoice: null })}
                 className={`
                   h-14 flex items-center justify-start gap-3 px-4 rounded-2xl border-2 transition-all duration-300
-                  ${selectedLanguage === lang.id 
+                  ${selectedLanguage === lang.modelLangCode 
                     ? "border-violet-600 bg-violet-50/50 text-violet-700" 
                     : "border-zinc-50 hover:border-zinc-200 hover:bg-zinc-50/50 text-zinc-600"
                   }
                 `}
               >
-                <span className="text-xl">{lang.flag}</span>
-                <span className="font-bold">{lang.name}</span>
+                <span className="text-xl">{lang.countryFlag}</span>
+                <span className="font-bold truncate">{lang.language}</span>
               </Button>
             ))}
           </div>
@@ -101,14 +115,14 @@ export function CreateStepTwo({
             <Volume2 className="h-5 w-5 text-violet-600" />
             <h3 className="font-bold text-zinc-900">Pick a Voice</h3>
           </div>
-          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-            {voices.map((voice) => (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {availableVoices.map((voice) => (
               <Card
-                key={voice.id}
-                onClick={() => updateFormData({ selectedVoice: voice.id })}
+                key={voice.modelName}
+                onClick={() => updateFormData({ selectedVoice: voice.modelName })}
                 className={`
                   p-4 cursor-pointer transition-all duration-300 border-2 rounded-2xl relative flex items-center justify-between group
-                  ${selectedVoice === voice.id 
+                  ${selectedVoice === voice.modelName 
                     ? "border-violet-600 bg-violet-50/50 shadow-sm" 
                     : "border-zinc-50 hover:border-zinc-200 hover:shadow-md"
                   }
@@ -117,19 +131,19 @@ export function CreateStepTwo({
                 <div className="flex items-center gap-4">
                   <div className={`
                     h-10 w-10 rounded-xl flex items-center justify-center transition-colors
-                    ${selectedVoice === voice.id ? "bg-violet-600 text-white" : "bg-zinc-100 text-zinc-400 group-hover:bg-zinc-200"}
+                    ${selectedVoice === voice.modelName ? "bg-violet-600 text-white" : "bg-zinc-100 text-zinc-400 group-hover:bg-zinc-200"}
                   `}>
                     <Mic2 className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-zinc-900">{voice.name}</h4>
+                      <h4 className="font-bold text-zinc-900 capitalize text-sm">{voice.modelName}</h4>
                       <Badge variant="secondary" className="text-[10px] uppercase tracking-wider py-0 px-1.5 h-4 bg-zinc-100 text-zinc-500 font-bold border-none">
-                        {voice.style}
+                        {voice.gender}
                       </Badge>
                     </div>
-                    <p className="text-[11px] text-zinc-400 font-medium">
-                      {voice.type} • AI Narrator
+                    <p className="text-[11px] text-zinc-400 font-medium capitalize mt-0.5">
+                      {voice.model} • AI Narrator
                     </p>
                   </div>
                 </div>
@@ -138,20 +152,25 @@ export function CreateStepTwo({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={(e) => togglePlay(e, voice.id)}
+                    onClick={(e) => togglePlay(e, voice.modelName, voice.preview)}
                     className={`
                       h-9 w-9 rounded-full transition-all
-                      ${playingVoice === voice.id 
+                      ${playingVoice === voice.modelName 
                         ? "bg-violet-600 text-white shadow-lg shadow-violet-500/20" 
                         : "bg-white text-zinc-400 border border-zinc-100 hover:bg-zinc-50 hover:text-violet-600"
                       }
                     `}
                   >
-                    {playingVoice === voice.id ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
+                    {playingVoice === voice.modelName ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
                   </Button>
                 </div>
               </Card>
             ))}
+            {availableVoices.length === 0 && (
+              <div className="text-center p-8 text-zinc-500 text-sm">
+                No voices available for this language.
+              </div>
+            )}
           </div>
         </div>
       </div>

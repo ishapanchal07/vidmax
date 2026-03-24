@@ -28,7 +28,7 @@ export default function CreateSeriesPage() {
     nicheType: "available" as "available" | "custom",
     selectedNiche: null as string | null,
     customNiche: "",
-    selectedLanguage: "en",
+    selectedLanguage: "en-US",
     selectedVoice: null as string | null,
     script: "",
     topic: "",
