@@ -75,6 +75,13 @@ export const Language = [
     "countryFlag": "🇯🇵",
     "modelName": "deepgram",
     "modelLangCode": "ja-JP"
+  },
+  {
+    "language": "Gujarati",
+    "countryCode": "IN",
+    "countryFlag": "🇮🇳",
+    "modelName": "fonadalab",
+    "modelLangCode": "gu-IN"
   }
 ];
 
@@ -114,26 +121,26 @@ export const DeepgramVoices = [
 export const FonadalabVoices = [
   {
     "model": "fonadalab",
-    "modelName": "vanee",
-    "preview": "fonadalab-vanee.mp3",
+    "modelName": "vaanee",
+    "preview": "fonadalab-Vaanee.mp3",
     "gender": "female"
   },
   {
     "model": "fonadalab",
-    "modelName": "chitraa",
-    "preview": "fonadalab-chitraa.mp3",
+    "modelName": "chaitra",
+    "preview": "fonadalab-Chaitra.mp3",
     "gender": "female"
   },
   {
     "model": "fonadalab",
-    "modelName": "raaga",
-    "preview": "fonadalab-raaga.mp3",
-    "gender": "male"
+    "modelName": "meghra",
+    "preview": "fonadalab-Meghra.mp3",
+    "gender": "female"
   },
   {
     "model": "fonadalab",
     "modelName": "nirvani",
-    "preview": "fonadalab-nirvani.mp3",
+    "preview": "fonadalab-Nirvani.mp3",
     "gender": "female"
   }
 ];

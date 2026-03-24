@@ -49,7 +49,7 @@ export function CreateStepTwo({
       if (audioRef.current) {
         audioRef.current.pause();
       }
-      const audio = new Audio(`/voices/${previewUrl}`);
+      const audio = new Audio(`/voice/${previewUrl}`);
       audioRef.current = audio;
       audio.play().catch(err => console.error("Error playing audio", err));
       setPlayingVoice(voiceId);
